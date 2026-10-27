@@ -114,7 +114,7 @@ The endpoint is `http://host:3333/mcp`. Put TLS in front (Caddy, a Cloudflare tu
 
 **Embed it**: `createFetchHandler({ bearerToken, apiKey })` returns a `(Request) => Promise<Response>` for any web-standard runtime (Cloudflare Workers, Deno, Bun, Hono).
 
-Whichever way, clients connect with the URL plus `Authorization: Bearer <MCP_BEARER_TOKEN>`. The token is required: without it, anyone who finds the URL can read your health data.
+Whichever way, clients connect with the URL plus `Authorization: Bearer <MCP_BEARER_TOKEN>`. Clients that can't send headers (e.g. claude.ai custom connectors) can use `https://<your app>/mcp/<MCP_BEARER_TOKEN>` instead. The token is required: without it, anyone who finds the URL can read your health data.
 
 ## Limits, honestly
 

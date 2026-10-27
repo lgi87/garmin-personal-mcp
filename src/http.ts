@@ -31,8 +31,17 @@ export function createFetchHandler(opts: FetchHandlerOptions): (request: Request
 
   return async (request) => {
     const url = new URL(request.url);
-    if (!paths.has(url.pathname)) return new Response("Not found", { status: 404 });
-    const given = Buffer.from(request.headers.get("authorization")?.replace(/^Bearer\s+/i, "") ?? "");
+    // Clients that cannot send headers (claude.ai custom connectors) may put the
+    // token in the path instead: /mcp/<token>.
+    let pathToken: string | undefined;
+    if (!paths.has(url.pathname)) {
+      const cut = url.pathname.lastIndexOf("/");
+      if (cut <= 0 || !paths.has(url.pathname.slice(0, cut))) return new Response("Not found", { status: 404 });
+      pathToken = decodeURIComponent(url.pathname.slice(cut + 1));
+    }
+    const given = Buffer.from(
+      pathToken ?? request.headers.get("authorization")?.replace(/^Bearer\s+/i, "") ?? "",
+    );
     if (given.length !== expected.length || !timingSafeEqual(given, expected)) {
       return new Response("Unauthorized", { status: 401, headers: { "WWW-Authenticate": "Bearer" } });
     }
